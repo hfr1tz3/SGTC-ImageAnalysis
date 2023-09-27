@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 '''
 def tracks_pipeline(raw_tracks_data, title = None):
     tracks = raw_tracks_data.copy()
+    tracks.rename(columns = {'Unnamed: 0': 'index', '0': 'cell', '1': 'frame', '2':'xcoord', '3':'ycoord'}, inplace=True)
     tracks = get_velocities(tracks)
     tracks = get_morphology(tracks)
 
@@ -259,7 +260,7 @@ def get_velocities(tracks, histogram = False):
 def average_speed(tracks, histogram = False):
     avg_speeds = []
     for i in range(int(tracks['cell'].min()), int(tracks['cell'].max()+1)):
-        cell = tracks.loc[tracks['cell'] == i]['speeds']
+        cell = tracks.loc[tracks['cell'] == i]['speed']
         avg_speeds.append(np.average(cell.values))
     
     if histogram == True:
@@ -299,7 +300,10 @@ def check_nbhd(cell, tracks, plots = False, max_plots = 0):
         frame = row['frame']
         t = tracks.loc[tracks['frame']==frame]
         cell_x, cell_y = row['xcoord'], row['ycoord']
-        cell_diameter = row['diameter']
+        if 'diameter' not in row.index:
+            cell_diameter = 20
+        else:
+            cell_diameter = row['diameter']
         nbhd_radius = 4*cell_diameter
         nbhd = t.loc[(cell_x - nbhd_radius < t['xcoord']) &
                      (cell_x + nbhd_radius > t['xcoord']) &
@@ -316,11 +320,14 @@ def plot_quivers(center_cell, neighborhood, max_plots = 20):
         frame = neighborhood.loc[neighborhood['frame'] == i]
         center_x = center_cell.loc[center_cell['frame']==i]['xcoord']
         center_y = center_cell.loc[center_cell['frame']==i]['ycoord']
-        cell_diameter = center_cell.loc[center_cell['frame']==i]['diameter']
+        if 'diameter' not in frame.columns:
+            cell_diameter = 20
+        else:
+            cell_diameter = center_cell.loc[center_cell['frame']==i]['diameter']
         nbhd_radius = 4*cell_diameter
         x,y = frame['xcoord'], frame['ycoord']
-        u = [k[0] for k in frame['velocities'].apply(eval).values]
-        v = [k[0] for k in frame['velocities'].apply(eval).values]
+        u = [k[0] for k in frame['velocity'].apply(eval).values]
+        v = [k[0] for k in frame['velocity'].apply(eval).values]
         fig,ax = plt.subplots()
         ax.quiver(x,y,u,v)
         ax.scatter(x,y,marker='o', color='black')
