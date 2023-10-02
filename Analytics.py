@@ -210,7 +210,7 @@ def pad_count_cells_in_grid(celldf, bin_size = 200, pad = 50, frame_size = 2040,
     
     # The stacked bar chart
     if graph == True:
-        frame = celldf['Frame'].values[0]
+        frame = celldf['frame'].values[0]
         bin_list = [f'Col {i}' for i in range(num_bins)]
         legend = [f'Row {i}' for i in range(num_bins)]
         fig, ax = plt.subplots(figsize=(10,10))
